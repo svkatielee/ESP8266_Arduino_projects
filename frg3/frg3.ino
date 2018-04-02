@@ -37,7 +37,7 @@
  *   no password, set hostname 
  */
 
- const char *gRev = "frg3-0.9.3";  // Software Revision Code, increment for OTA
+ const char *gRev = "frg3-0.9.4";  // Software Revision Code, increment for OTA
 /*
 *  0.9.0 First try new refactored
 *  0.9.1 add OTA back in
@@ -56,8 +56,8 @@ IPAddress ip(192, 168, 11, 61);
 IPAddress gateway(192, 168, 11, 1);
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(192, 168, 11, 1);
-const char* ssid     = "ssid";
-const char* password = "pass";
+const char* ssid     = "tcls";
+const char* password = "svkatielee";
 
 #include <OneWire.h>
 OneWire  ds(13);  // on GPIO16 (a 4.7K resistor is necessary) For DS18B20 Dallas tempreature

@@ -9,13 +9,17 @@
  Note that this sketch uses LED_BUILTIN to find the pin with the internal LED
 */
 
-const char *gRev = "bat-0.1.2";  // Software Revision Code
+const char *gRev = "bat-0.1.3b";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
-#define SLEEPTIME 900 * 1000000      // seconds 10 000 000  600=10 minutes
+// #define SLEEPTIME 10 * 1000000      // seconds 10 000 000  600=10 minutes
+#define SLEEPTIME 10 * 1000      // seconds 10 000 millisec for delay, not dfeepsleep  600=10 minutes
+
+#include <Wire.h>
+#include <Adafruit_ADS1015.h>
 
 unsigned long startTime = millis();
 
@@ -32,6 +36,8 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 char msg[50];
 String clientId = "Battery";   // Create a client ID
+Adafruit_ADS1015 ads; 
+int16_t adc0;
 
 // OTA config --------------------------------
 void checkForOTA() {
@@ -91,7 +97,9 @@ void setup() {
   Serial.println(WiFi.macAddress());
   
   client.setServer(mqtt_server, 1883);
-  
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  ads.begin();
   
 }
 
@@ -140,7 +148,18 @@ void loop() {
       Serial.print("Publish message: "); Serial.println(msg); 
     }
     yield();
-    
+  // read ADS1115
+  adc0 = ads.readADC_SingleEnded(0);
+  long v4 = map(adc0, 1193, 1406, 1101, 1402);
+  float_t v3 = ((float)v4/100.0f)+ 0.001f;
+  dtostrf(v3, 6, 3, v_str);
+  snprintf (msg, 75, "{\"ADS1115\": %s}", v_str); 
+    if (!client.publish("tcls/Battery/adc", msg, true) ) {
+        Serial.println("Failed to publish !!!");
+    } else {
+      Serial.print("Publish message: "); Serial.println(msg); 
+    }
+    yield();  
   digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
                                     // but actually the LED is on; this is because 
                                     // it is active low on the ESP-01)
@@ -168,5 +187,5 @@ void loop() {
   */
   
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
-  delay(300000);                      // Wait for 5 minutes (to demonstrate the active low LED)
+  delay(SLEEPTIME);                      // Wait for SLEEPTIME (to demonstrate the active low LED)
 }
