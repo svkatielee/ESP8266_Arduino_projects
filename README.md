@@ -1,5 +1,3 @@
-View this project on [CADLAB.io](https://cadlab.io/node/917). 
-
 README.md for github.com
 
 #This repo is for saving my 'mostly working' ESP projects
