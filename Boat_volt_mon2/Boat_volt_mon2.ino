@@ -1,33 +1,44 @@
 /*
+ * include code from
  ESP8266 Blink by Simon Peter
  Blink the blue LED on the ESP-01 module
- This example code is in the public domain
  
  The blue LED on the ESP-01 module is connected to GPIO1 
  (which is also the TXD pin; so we cannot use Serial.print() at the same time)
  
  Note that this sketch uses LED_BUILTIN to find the pin with the internal LED
 
- new board, so new rev 2.0
+ Batt_volt_mon2 Is to monitor boat house battery with ADS1115 A to D xonverter
+ and send mqtt to op2e
+ Also does OTA:
+    on pot run Arduino IDE compile, then Sketch->Export Comp Bin
+    then scp ~/Arduino/Boat_volt_mon2/Boat_volt_mon2.ino.d1_mini.bin rop:/var/www/html/bin/
+    then the next cycle it will update then reboot and run new code.
+
+ built a new board with connector for buck, ADC and Wemos D1 Mini. soldered in the trimmer pot       
+    new board, so new rev 2.0
 
 */
 
-const char *gRev = "bat-0.2.0";  // Software Revision Code
+const char *gRev = "bat-0.2.2";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <WiFiClient.h>
 #include <PubSubClient.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 // #define SLEEPTIME 10 * 1000000      // seconds 10 000 000  600=10 minutes
-#define SLEEPTIME 600 * 1000      // seconds 10 000 millisec for delay, not dfeepsleep  600=10 minutes
+#define SLEEPTIME 10 * 1000      // seconds 10 000 millisec for delay, not dfeepsleep  600=10 minutes
 
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
 
 unsigned long startTime = millis();
+int cycle = 0;
 
 // Static IP details...
-IPAddress ip(192, 168, 11, 63);
+IPAddress ip(192, 168, 11, 65);
 IPAddress gateway(192, 168, 11, 1);
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(192, 168, 11, 1);
@@ -38,6 +49,14 @@ IPAddress mqtt_server(192, 168, 11, 30);
 WiFiClient espClient;
 PubSubClient client(espClient);
 char msg[50];
+
+ESP8266WebServer server(80);
+char gTmpBuf[32+2];  // Generic Temp Buffer
+#define FMT(x) strcpy_P(gFmtBuf, PSTR(x))  // Used with printf() for the format string
+    // USE WITH CAUTION !
+char gFmtBuf[64+2];   
+
+
 String clientId = "Batt2";   // Create a client ID
 Adafruit_ADS1115 ads; 
 int16_t adc1;
@@ -98,6 +117,10 @@ void setup() {
   //}
   Serial.println();
   Serial.println(WiFi.macAddress());
+  Serial.println(WiFi.localIP());
+  server.on ( "/", handleRootNormal );
+  server.onNotFound ( handleNotFound );
+  server.begin();
   
   client.setServer(mqtt_server, 1883);
   ads.setGain(GAIN_TWOTHIRDS);     // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
@@ -125,12 +148,12 @@ void loop() {
     }
   
   // check for OTA update
-  checkForOTA();
+  //checkForOTA();
   yield();
   delay(100);
-    int cycle = millis() - startTime;
+    //int cycle = millis() - startTime;
     snprintf (msg, 75, "{\"Revision\": %s, \"Duration\": %d}", gRev, cycle); 
-    if (!client.publish("tcls/Battery/rev", msg, true) ) {
+    if (!client.publish("tcls/BatteryT/rev", msg, true) ) {
         Serial.println("Failed to publish !!!");
     } else {
         Serial.print("Publish message: "); Serial.println(msg); 
@@ -142,14 +165,14 @@ void loop() {
   
   // read ADS1115
   adc1 = ads.readADC_SingleEnded(1);
-  long v4 = map(adc1,  21176, 26818, 11010, 14010);
+  long v4 = map(adc1,  20667, 26298, 11010, 14010);
   Serial.print("v4: "); Serial.println((float)v4/1000.0f);
   float_t v3 = ((float)v4/1000.0f);
   dtostrf(v3, 2, 3, v_str);
   
   Serial.print("v_str: "); Serial.println(v_str);
-  snprintf (msg, 75, "{\"ADS1115\": %s}", v_str); 
-    if (!client.publish("tcls/Battery/adc", msg, true) ) {
+  snprintf (msg, 75, "{\"BatteryT\": %s}", v_str); 
+    if (!client.publish("tcls/BatteryT/volt", msg, true) ) {
         Serial.println("Failed to publish !!!");
     } else {
       Serial.print("Publish message: "); Serial.println(msg); 
@@ -161,5 +184,116 @@ void loop() {
   delay(100);                      // Wait for a second
 
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+  
+  server.handleClient();            // Check for webpage request
+    
+  cycle = millis() - startTime;
   delay(SLEEPTIME);                      // Wait for SLEEPTIME (to demonstrate the active low LED)
 }
+
+//==============================================================================
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += ( server.method() == HTTP_GET ) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+
+  for ( uint8_t i = 0; i < server.args(); i++ ) {
+    message += " " + server.argName ( i ) + ": " + server.arg ( i ) + "\n";
+  }
+
+  server.send ( 404, "text/plain", message );
+}
+
+//==============================================================================
+//void handleRoot() {                  
+//  server.send ( 200, "text/html", msg );
+//}
+
+//==============================================================================
+void handleRootNormal() {     
+
+  String msg;
+  
+  msg = "<!DOCTYPE html>"
+        "<html>"
+        "<head>"
+        "<title>NMEA to Wifi Bridge</title>"
+        "<meta http-equiv=\"refresh\" content=\"10\" />"
+        "<meta charset=\"utf-8\" />"
+        "<meta name=viewport content=\"width=device-width, initial-scale=1\">"
+        "<meta http-equiv='Pragma' content='no-cache'>"
+        "<link rel='shortcut icon' href='http://espressif.com/favicon.ico'>"
+        "<style>"
+        "  body {background-color: #ddddee;}"
+        "</style> "
+        "</head>"
+        "<body>"
+        "<center>"
+        "<h1>Serial to Wifi Bridge</h1>"
+        "<p>This device broadcasts the input <br>"
+        "NMEA data stream to your Wifi network.</p>"
+        "<p>Configure multiple openCPN <br>"
+        "systems\' connections, each with: <br>"
+        "Properties   <b>network</b><br>"
+        "Protocol <b>UDP</b><br>"
+        "Address <b>localhost</b><br>"
+     
+        "<br>";
+        
+  
+  yield();
+  
+  msg += "    Uptime: <b>"          + String(upTimeStr()) + F("</b><br>");
+
+  msg += "    My IPA: <b>" + String(server.client().remoteIP()) + F("</b><br>");
+
+  msg += "<br><br>To reconfigure, press and hold config button, press reset, "
+         "continue to hold config until the LED stays lit.<br>";
+  msg += "<br>Revision: " + String(gRev) +  "<br>";
+  msg += F("Powered by: <a href='http://espressif.com/'>Esp8266</a>");
+  
+  msg += "</center>"
+         "</body>"
+         "</html>";
+  yield();      
+#ifdef DEBUG
+  Serial.print ("in handleRootNormal\n");
+#endif                                        
+  server.send ( 200, "text/html", msg );
+}
+
+
+//==============================================================================
+// Provides UpTime in Seconds
+//
+unsigned long
+upTime()
+{
+  return millis() / 1000;
+}
+//==============================================================================
+String upTimeStr()
+{
+//    char buf[PBUFSIZE];
+    
+    int uptimesec = upTime();
+    int uptimemin = uptimesec / 60;
+    int uptimehr  = uptimemin / 60;
+    int uptimeday = uptimehr  / 24;
+    yield();
+
+    uptimesec %= 60;
+    uptimemin %= 60;
+    uptimehr  %= 24;
+
+    snprintf( gTmpBuf, sizeof(gTmpBuf),
+        FMT("%d Days, %02d:%02d:%02d"), uptimeday, uptimehr, uptimemin, uptimesec );
+    yield();
+    
+    return gTmpBuf;
+} 
