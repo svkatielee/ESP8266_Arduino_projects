@@ -1,13 +1,6 @@
 /*
- * include code from
- ESP8266 Blink by Simon Peter
- Blink the blue LED on the ESP-01 module
+ * 
  
- The blue LED on the ESP-01 module is connected to GPIO1 
- (which is also the TXD pin; so we cannot use Serial.print() at the same time)
- 
- Note that this sketch uses LED_BUILTIN to find the pin with the internal LED
-
  Batt_volt_mon2 Is to monitor boat house battery with ADS1115 A to D xonverter
  and send mqtt to op2e
  Also does OTA:
@@ -20,11 +13,12 @@
 
     refactored to tabs, added a status web page so gRev to 0.3.x
     finish refactor 0.4.1
-    average current 0.4.2
+    average current 0.4.2   ! didn't work! removed
+    0.4.3 clean up webpage 
 
 */
 
-const char *gRev = "bat-0.4.2";  // Software Revision Code
+const char *gRev = "bat-0.4.3";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 

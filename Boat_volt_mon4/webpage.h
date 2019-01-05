@@ -94,11 +94,12 @@ void handleRoot() {
   mesg += F("<p>");
   mesg += "    Battery Volts=" + String(v_str) + F("</b><br>");
   
-  mesg += "Differential: " + String(c3) + "(" + String(c4) + "mV)" + F("</b><br>");
+  mesg += F("<p>");
   mesg += "Current: " + String(c_str) + F("</b><br>");
-  mesg += "Curr_in: " + String(curr_in[0]) + " " + String(curr_in[1]) + " " + String(curr_in[2]) + " " + String(curr_in[3]) + " " + String(curr_in[4]) + F("</b><br>");
+  //mesg += "Curr_in: " + String(curr_in[0]) + " " + String(curr_in[1]) + " " + String(curr_in[2]) + " " + String(curr_in[3]) + " " + String(curr_in[4]) + F("</b><br>");
+  mesg += F("<p>");
   mesg += "Amp Hours: " +  String(ah_str) + F("</b><br>"); 
-  mesg += "Avg loop count: " + String(loop_count_avg) + F("</b><br>"); 
+  //mesg += "Avg loop count: " + String(loop_count_avg) + F("</b><br>"); 
   mesg += F("<p>");
   mesg += "<br>Revision: " + String(gRev) +  "<br>";
   mesg += F("<p>");
