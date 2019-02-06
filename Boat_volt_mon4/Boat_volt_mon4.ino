@@ -1,7 +1,13 @@
 /*
- * 
- 
- Batt_volt_mon2 Is to monitor boat house battery with ADS1115 A to D xonverter
+ *
+  * Copyright (c) 2018, Larry G Littlefield - LGL - KB7KMO - larryl@tcls.com
+  *
+  * See Blog at: http://KB7KMO.blogspot.com
+  *
+  * All rights reserved. 
+*/ 
+ /* 
+ Batt_volt_mon4 Is to monitor boat house battery with ADS1115 A to D xonverter
  and send mqtt to op2e
  Also does OTA:
     on pot run Arduino IDE compile, then Sketch->Export Comp Bin
@@ -14,11 +20,21 @@
     refactored to tabs, added a status web page so gRev to 0.3.x
     finish refactor 0.4.1
     average current 0.4.2   ! didn't work! removed
-    0.4.3 clean up webpage 
+    0.4.3 clean up  webpage 
+    0.4.4 adjust VCC below 5V, add copyright
+          reversed shunt wires so (* -1)
 
 */
-
-const char *gRev = "bat-0.4.3";  // Software Revision Code
+#define COPYRIGHT1 PSTR("\
+     /* \
+      * Copyright (c) 2018, Larry G. Littlefield - LGL - KB7KMO - larryl@tcls.com\
+      * \
+      * See Blog at: <a href='http://KB7KMO.blogspot.com'>http://KB7KMO.blogspot.com</a>\
+      * \
+      * All rights reserved. \
+      */ \
+    ")
+const char *gRev = "bat-0.4.4";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 
@@ -27,6 +43,7 @@ char v_str[15], c_str[15], ah_str[15];
 char c3[15], c4[15];
 long curr_in[5]; byte cnt=0;
 float current, ahour;
+int16_t adc1, adc2;
 unsigned long ads_time = 1000;
 unsigned long last_ads = millis();
 unsigned long mqtt_time = 60000;
@@ -72,6 +89,7 @@ void setup() {
   byte ret_code;
    
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
   Serial.setDebugOutput(true);
 
@@ -90,7 +108,8 @@ void setup() {
         break;
       }
     }
-
+    digitalWrite(LED_BUILTIN, LOW);
+    
     Serial.println();
     Serial.println(WiFi.macAddress());
     Serial.println(WiFi.localIP());
@@ -133,9 +152,9 @@ void loop() {
   #endif // DO_MQTT 
 
   // Blink the LED
-  digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on 
-  delay(100);                       // Wait for a  bit
-  digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
+  digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED on 
+  delay(200);                       // Wait for a  bit
+  digitalWrite(LED_BUILTIN, LOW);  // Turn the LED off by making the voltage HIGH
 
 
   #ifdef DO_PAGE

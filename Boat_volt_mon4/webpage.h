@@ -101,7 +101,12 @@ void handleRoot() {
   mesg += "Amp Hours: " +  String(ah_str) + F("</b><br>"); 
   //mesg += "Avg loop count: " + String(loop_count_avg) + F("</b><br>"); 
   mesg += F("<p>");
+  mesg += "adc1: " + String(adc1)+ "  adc2: " + String(adc2) + F("</b><br>"); 
   mesg += "<br>Revision: " + String(gRev) +  "<br>";
+  mesg += F("<p>");
+  mesg += F("Copyright (c) 2018, Larry G. Littlefield<br>LGL - KB7KMO - larryl@tcls.com");
+  mesg += F("<p>");
+  mesg += F("See Blog at: <a href='http://KB7KMO.blogspot.com'>http://KB7KMO.blogspot.com</a>");
   mesg += F("<p>");
   mesg += F("Powered by: <a href='http://espressif.com/'>Esp8266</a>");
   
