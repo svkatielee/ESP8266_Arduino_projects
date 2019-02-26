@@ -9,6 +9,12 @@ PubSubClient client(espClient);
 String clientId = "Batt";   // Create a client ID
 //client.setServer(mqtt_server, 1883);
 
+void op2eTime_callback(char* topic, byte* payload, unsigned int length) {
+  if((int)payload >= 18 && ahour >= 0) {
+    ahour = 0;
+  } 
+}
+
 void mqtt_connect(){
     byte timeout = 0;
     while (!client.connected()) {
@@ -37,6 +43,8 @@ void mqtt_connect(){
         Serial.print("Publish message: "); Serial.println(msg); 
     }
     delay(100);
+    client.subscribe("op2e/Time"); //to get time from op2e
+    
     yield();
 }
 

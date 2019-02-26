@@ -23,7 +23,9 @@
     0.4.3 clean up  webpage 
     0.4.4 adjust VCC below 5V, add copyright
           reversed shunt wires so (* -1)
-
+    0.4.5 reduce Buck from 5.25 to 5.02
+          reset amp hours daily
+ 
 */
 #define COPYRIGHT1 PSTR("\
      /* \
@@ -34,7 +36,7 @@
       * All rights reserved. \
       */ \
     ")
-const char *gRev = "bat-0.4.4";  // Software Revision Code
+const char *gRev = "bat-0.4.5";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 
@@ -118,6 +120,7 @@ void setup() {
     #endif // DO_PAGE
     #ifdef DO_MQTT
       client.setServer(mqtt_server, 1883);
+      client.setCallback(op2eTime_callback);
     #endif // DO_MQTT 
     #ifdef DO_ADS
       setup_ads();
