@@ -52,6 +52,7 @@ void loop_ads(){
   current = current * multiplier * curr_correction;
   dtostrf(current, 2, 3, c_str);
   ahour += current / (60.0F * 60.0F);  //dt is delta time for amp hour
+  if(op_hour >= 16 && ahour >= 0) ahour = 0;
   dtostrf(ahour, 2, 3, ah_str);
   loop_count_avg = (loop_count_avg +loop_count )/2;
   loop_count = 0;

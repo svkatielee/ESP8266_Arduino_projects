@@ -25,6 +25,7 @@
           reversed shunt wires so (* -1)
     0.4.5 reduce Buck from 5.25 to 5.02
           reset amp hours daily
+    0.4.6 consolidate the mqttpub, more with callback, init ahour-10.0
  
 */
 #define COPYRIGHT1 PSTR("\
@@ -36,7 +37,7 @@
       * All rights reserved. \
       */ \
     ")
-const char *gRev = "bat-0.4.5";  // Software Revision Code
+const char *gRev = "bat-0.4.6";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 
@@ -44,7 +45,8 @@ char msg[50];
 char v_str[15], c_str[15], ah_str[15]; 
 char c3[15], c4[15];
 long curr_in[5]; byte cnt=0;
-float current, ahour;
+float current, ahour=0.0;
+int op_hour=1;
 int16_t adc1, adc2;
 unsigned long ads_time = 1000;
 unsigned long last_ads = millis();

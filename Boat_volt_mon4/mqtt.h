@@ -10,9 +10,12 @@ String clientId = "Batt";   // Create a client ID
 //client.setServer(mqtt_server, 1883);
 
 void op2eTime_callback(char* topic, byte* payload, unsigned int length) {
-  if((int)payload >= 18 && ahour >= 0) {
-    ahour = 0;
-  } 
+    if(length == 2) {
+      op_hour = ((int)payload[1] - 0x30) + (((int)payload[0] - 0x30) * 10) ;
+    }
+    if(length == 1) {
+      op_hour = ((int)payload[0] - 0x30);
+    }
 }
 
 void mqtt_connect(){
@@ -43,27 +46,20 @@ void mqtt_connect(){
         Serial.print("Publish message: "); Serial.println(msg); 
     }
     delay(100);
-    client.subscribe("op2e/Time"); //to get time from op2e
+    client.subscribe("tcls/op2e/Time"); //to get time from op2e
     
     yield();
 }
 
 void loop_mqtt(){
-    snprintf (msg, 75, "{\"Battery\": %s}", v_str); 
-    if (!client.publish("tcls/Battery/volt", msg, true) ) {
-        Serial.println("Failed to publish !!!");
-    } else {
-      Serial.print("Publish message: "); Serial.println(msg); 
-    }
-    yield();
-        snprintf (msg, 75, "{\"Current\": %s, \"AHour\": %s}", c_str, ah_str); 
-    if (!client.publish("tcls/Battery/current", msg, true) ) {
-        Serial.println("Failed to publish !!!");
-    } else {
-      Serial.print("Publish message: "); Serial.println(msg); 
-    }
-    yield();
 
+    snprintf (msg, 75, "{\"Battery\": %s, \"Current\": %s, \"AHour\": %s}", v_str, c_str, ah_str); 
+    if (!client.publish("tcls/Battery/batt", msg, true) ) {
+        Serial.println("Failed to publish !!!");
+    } else {
+      Serial.print("Publish message: "); Serial.println(msg); 
+    }
+    yield();
 
 }
     
