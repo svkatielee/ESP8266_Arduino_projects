@@ -40,22 +40,23 @@
 const char *gRev = "bat-0.4.6";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
-
+int mystate=3;
 char msg[50];
 char v_str[15], c_str[15], ah_str[15]; 
 char c3[15], c4[15];
 long curr_in[5]; byte cnt=0;
 float current, ahour=0.0;
-int op_hour=1;
+unsigned int op_hour=1;
 int16_t adc1, adc2;
 unsigned long ads_time = 1000;
 unsigned long last_ads = millis();
-unsigned long mqtt_time = 60000;
+unsigned long mqtt_time = 30000;
 unsigned long last_mqtt = millis();
 unsigned long last_ota = millis();
 unsigned long ota = 10000;
 unsigned long loop_count = 0; 
 unsigned long loop_count_avg =0;
+
 
 #define DO_OTA
 #ifdef DO_OTA
@@ -91,7 +92,7 @@ const char* password = "svkatielee";
 void setup() {
   
   byte ret_code;
-   
+  
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
   digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
@@ -105,7 +106,7 @@ void setup() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
+      delay(200);
       Serial.print(".");
       if (timeout++ >= 15) {
         Serial.println("--> ERROR: Wifi commection timeout");
@@ -123,6 +124,7 @@ void setup() {
     #ifdef DO_MQTT
       client.setServer(mqtt_server, 1883);
       client.setCallback(op2eTime_callback);
+      mqtt_connect();
     #endif // DO_MQTT 
     #ifdef DO_ADS
       setup_ads();
@@ -147,13 +149,14 @@ void loop() {
     }
   #endif //DO_ADS
 
-
+  client.loop();
   #ifdef DO_MQTT
     if ( (last_mqtt + mqtt_time ) < millis() ){
       last_mqtt = millis();
-      mqtt_connect();
+      //mqtt_connect();
       loop_mqtt();
     }
+    
   #endif // DO_MQTT 
 
   // Blink the LED
@@ -161,7 +164,9 @@ void loop() {
   delay(200);                       // Wait for a  bit
   digitalWrite(LED_BUILTIN, LOW);  // Turn the LED off by making the voltage HIGH
 
-
+  Serial.print("mqtt.state=");
+  Serial.println((int)client.state());
+  
   #ifdef DO_PAGE
     loop_webpage();
   #endif //DO_PAGE

@@ -10,7 +10,9 @@ String clientId = "Batt";   // Create a client ID
 //client.setServer(mqtt_server, 1883);
 
 void op2eTime_callback(char* topic, byte* payload, unsigned int length) {
-    if(length == 2) {
+    Serial.println("......in callback....");
+    mystate+=1;
+    if(length == 2) {     // it is an ascii number so subtract to make it numeric
       op_hour = ((int)payload[1] - 0x30) + (((int)payload[0] - 0x30) * 10) ;
     }
     if(length == 1) {

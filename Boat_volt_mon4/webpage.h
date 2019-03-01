@@ -103,6 +103,8 @@ void handleRoot() {
   mesg += F("<p>");
   mesg += F("<p>");
   mesg += F("<p>");
+  mesg += "mystate=" + String(mystate) + F("</b><br>");
+  mesg += F("<p>"); 
   mesg += "adc1: " + String(adc1)+ "  adc2: " + String(adc2)+ " op_hour: " + String(op_hour) + F("</b><br>"); 
   mesg += "Revision: " + String(gRev) +  "<br>";
   mesg += F("Copyright (c) 2018, Larry G. Littlefield<br>LGL - KB7KMO - larryl@tcls.com");
