@@ -35,9 +35,11 @@
  *   
  * Add OTA  
  *   no password, set hostname 
+ *   
+ *   0.9.5 - add timeout to mqtt connect so it doesn't run battery down if network fail
  */
 
- const char *gRev = "frg3-0.9.4";  // Software Revision Code, increment for OTA
+ const char *gRev = "frg3-0.9.5";  // Software Revision Code, increment for OTA
 /*
 *  0.9.0 First try new refactored
 *  0.9.1 add OTA back in
@@ -210,6 +212,7 @@ void setup()
     // Connect to mosquitto server//==================
     client.setServer(mqtt_server, 1883);
     String clientId = "Fridge";
+    timeout = 0;
     while (!client.connected()) {
         Serial.print("Attempting MQTT connection...");
         if (client.connect(clientId.c_str())) {
@@ -222,6 +225,10 @@ void setup()
             Serial.println("MQTT:  WiFi not connected.");
           }
         } 
+        if (timeout++ >= 5) {
+          Serial.println("--> ERROR: Wifi commection timeout");
+          break; 
+        }
     }
     
     yield();
