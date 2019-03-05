@@ -153,7 +153,7 @@ void loop() {
   #ifdef DO_MQTT
     if ( (last_mqtt + mqtt_time ) < millis() ){
       last_mqtt = millis();
-      //mqtt_connect();
+      mqtt_connect();
       loop_mqtt();
     }
     
@@ -161,7 +161,7 @@ void loop() {
 
   // Blink the LED
   digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED on 
-  delay(200);                       // Wait for a  bit
+  delay(500);                       // Wait for a  bit
   digitalWrite(LED_BUILTIN, LOW);  // Turn the LED off by making the voltage HIGH
 
   Serial.print("mqtt.state=");
