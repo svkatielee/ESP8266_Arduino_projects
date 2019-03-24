@@ -25,7 +25,7 @@ void loop_ads(){
   ads.setGain(GAIN_TWOTHIRDS);     // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
   //ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
   adc1 = ads.readADC_SingleEnded(1);
-  long v4 = map(adc1,  20667, 26298, 11010, 14010);  // for GAIN_TWOTHIRDS
+  long v4 = map(adc1,  14600, 21350, 10010, 14600);  // for GAIN_TWOTHIRDS
   //long v4 = map(adc1,  21998, 32126, 10000, 14600);  // for GAIN_ONE
   Serial.print("adc1: "); Serial.println(adc1);
   Serial.print("v4: "); Serial.println((float)v4/1000.0f);
