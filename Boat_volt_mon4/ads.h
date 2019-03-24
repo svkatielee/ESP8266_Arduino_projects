@@ -22,10 +22,11 @@ void setup_ads(){
 
 void loop_ads(){
   // read ADS1115 A1 for battery volts
-  //ads.setGain(GAIN_TWOTHIRDS);     // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
-  ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  ads.setGain(GAIN_TWOTHIRDS);     // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+  //ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
   adc1 = ads.readADC_SingleEnded(1);
-  long v4 = map(adc1,  21998, 32126, 10000, 14600);
+  long v4 = map(adc1,  20667, 26298, 11010, 14010);  // for GAIN_TWOTHIRDS
+  //long v4 = map(adc1,  21998, 32126, 10000, 14600);  // for GAIN_ONE
   Serial.print("adc1: "); Serial.println(adc1);
   Serial.print("v4: "); Serial.println((float)v4/1000.0f);
   float_t v3 = ((float)v4/1000.0f);
@@ -33,8 +34,8 @@ void loop_ads(){
   Serial.print("v_str: "); Serial.println(v_str);
 
   // read ADS1115 A2&A3 as differential for current shunt, 50mV/Amp
-  ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
-  //ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  //ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
   multiplier = ads.voltsPerBit()*1000.0F;           // Gets the millivolts per bit 
   adc2 = ads.readADC_Differential_2_3();
 // I tried to average current...got random readings periodically  
@@ -52,7 +53,7 @@ void loop_ads(){
   current = current * multiplier * curr_correction;
   dtostrf(current, 2, 3, c_str);
   ahour += current / (60.0F * 60.0F);  //dt is delta time for amp hour
-  if(op_hour >= 16 && ahour >= 0) ahour = 0;
+  if(op_hour >= 16 && ahour >= 0) { ahour = 0; mystate=1; }
   dtostrf(ahour, 2, 3, ah_str);
   loop_count_avg = (loop_count_avg +loop_count )/2;
   loop_count = 0;

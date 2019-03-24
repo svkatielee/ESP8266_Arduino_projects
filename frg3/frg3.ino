@@ -35,11 +35,13 @@
  *   
  * Add OTA  
  *   no password, set hostname 
- *   
+ *   switch from Wemos to generic 12-E
+ *    then set board to 8266 Generic and set flashsize to 4M(1M SPIFFS)
  *   0.9.5 - add timeout to mqtt connect so it doesn't run battery down if network fail
+ *   0.9.6 - take out time stamp, caue it is 8 hours in future in nodered
  */
 
- const char *gRev = "frg3-0.9.5";  // Software Revision Code, increment for OTA
+ const char *gRev = "frg3-0.9.6";  // Software Revision Code, increment for OTA
 /*
 *  0.9.0 First try new refactored
 *  0.9.1 add OTA back in
@@ -67,14 +69,14 @@ OneWire  ds(13);  // on GPIO16 (a 4.7K resistor is necessary) For DS18B20 Dallas
 DallasTemperature sensors(&ds);
 DeviceAddress fridgeTemp;
 
-#include <Wire.h> // For RTC timestamps6
-#include <RtcDS3231.h>
-RtcDS3231<TwoWire> Rtc(Wire);
+//#include <Wire.h> // For RTC timestamps6
+//#include <RtcDS3231.h>
+//RtcDS3231<TwoWire> Rtc(Wire);
 
 IPAddress mqtt_server(192, 168, 11, 30);
 WiFiClient espClient;
 PubSubClient client(espClient);
-char msg[50];
+char msg[75];
 String clientId = "Fridge";   // Create a client ID
 
 ADC_MODE(ADC_VCC);
@@ -151,7 +153,7 @@ void setup()
   Serial.println();
   
   sensors.requestTemperatures(); // Send the command to start temperatures conversion
-
+/*
  //  RTC
   Rtc.Begin();
 
@@ -185,14 +187,13 @@ void setup()
     // just clear them to your needed state
     Rtc.Enable32kHzPin(false);
     Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
-   
+  */ 
   ///==========
   yield();
 
   Serial.println("Sensor reads");
-  //uint32_t timestamp = now.TotalSeconds();  // since 1/1/20006
-  uint32_t timestamp = now.Epoch32Time();
-  //uint32_t timestamp = millis();
+ // uint32_t timestamp = now.Epoch32Time();
+ 
   
   long val=ESP.getVcc();   
   long battery = map((val),2621,  4416, 2500, 4200);
@@ -202,8 +203,8 @@ void setup()
   int temp = int(tempF);
 
 
-      Serial.print("timestamp: ");
-      Serial.print(timestamp);
+//      Serial.print("timestamp: ");
+//      Serial.print(timestamp);
       Serial.print(", battery: ");
       Serial.print(battery);
       Serial.print(", Temp: ");
@@ -234,7 +235,10 @@ void setup()
     yield();
     
     Serial.println("Sending ");  
-    snprintf (msg, 75, "{\"time\": %d, \"vcc\": %d, \"Temp\": %d}", timestamp, battery , temp); //==================
+    // send OTA msg
+    client.publish("tcls/Fridge/OTAmsg", msg, true);
+//    snprintf (msg, 75, "{\"time\": %d, \"vcc\": %d, \"Temp\": %d}", timestamp, battery , temp); //==================
+    snprintf (msg, 75, "{\"vcc\": %d, \"Temp\": %d}", battery , temp); //==================
     if (!client.publish("tcls/Fridge/temp", msg, true) ) {
         Serial.println("Failed to publish !!!");
     } else {

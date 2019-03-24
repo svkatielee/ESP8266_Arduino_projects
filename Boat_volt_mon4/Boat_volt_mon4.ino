@@ -26,6 +26,7 @@
     0.4.5 reduce Buck from 5.25 to 5.02
           reset amp hours daily
     0.4.6 consolidate the mqttpub, more with callback, init ahour-10.0
+    0.4.7 changed gain of current back to GAIN_ONE to see if fix the spurious reads
  
 */
 #define COPYRIGHT1 PSTR("\
