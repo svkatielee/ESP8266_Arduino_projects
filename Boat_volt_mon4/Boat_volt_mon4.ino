@@ -27,6 +27,7 @@
           reset amp hours daily
     0.4.6 consolidate the mqttpub, more with callback, init ahour-10.0
     0.4.7 changed gain of current back to GAIN_ONE to see if fix the spurious reads
+    0.4.8 changed circuit to add RC filter on current, changed current correction and multip
  
 */
 #define COPYRIGHT1 PSTR("\
@@ -38,7 +39,7 @@
       * All rights reserved. \
       */ \
     ")
-const char *gRev = "bat-0.4.6";  // Software Revision Code
+const char *gRev = "bat-0.4.7";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 int mystate=3;

@@ -7,8 +7,8 @@
 Adafruit_ADS1115 ads; 
 
 
-float curr_correction = 10.1F ;  // it was reading Ahour about 10% low so add the 0.1
-float multiplier = 0.03125F; 
+float curr_correction = 71.0F ;  // it was reading Ahour about 10% low so add the 0.1
+float multiplier = 0.0F; //3125F; 
 void setup_ads(){
   // moved to before each call 
   // ads.setGain(GAIN_TWOTHIRDS);  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
@@ -36,7 +36,8 @@ void loop_ads(){
   // read ADS1115 A2&A3 as differential for current shunt, 50mV/Amp
   //ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
   ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
-  multiplier = ads.voltsPerBit()*1000.0F;           // Gets the millivolts per bit 
+  //multiplier = ads.voltsPerBit()*1000.0F;           // Gets the millivolts per bit 
+  multiplier = ads.voltsPerBit();
   adc2 = ads.readADC_Differential_2_3();
 // I tried to average current...got random readings periodically  
 //    curr_in[cnt] = adc2;
