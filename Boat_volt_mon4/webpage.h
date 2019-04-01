@@ -95,11 +95,14 @@ void handleRoot() {
   mesg += "    Battery Volts=" + String(v_str) + F("</b><br>");
   
   mesg += F("<p>");
+  mesg += "ads duration: " + String(ads_dur) + F("</b><br>");
   mesg += "Current: " + String(c_str) + F("</b><br>");
+  //mesg += "Curr_in: " + String(curr_in[0]) + " " + String(curr_in[1]) + " " + String(curr_in[2]) + F("</b><br>");
   //mesg += "Curr_in: " + String(curr_in[0]) + " " + String(curr_in[1]) + " " + String(curr_in[2]) + " " + String(curr_in[3]) + " " + String(curr_in[4]) + F("</b><br>");
+  mesg += "Curr_in: " + String(curr_in[0]) + " " + String(curr_in[1]) + " " + String(curr_in[2]) + " " + String(curr_in[3]) + " " + String(curr_in[4]) + " " + String(curr_in[5]) + " " + String(curr_in[6]) + F("</b><br>");
   mesg += F("<p>");
   mesg += "Amp Hours: " +  String(ah_str) + F("</b><br>"); 
-  //mesg += "Avg loop count: " + String(loop_count_avg) + F("</b><br>"); 
+//  mesg += "Avg loop count: " + String(loop_count_avg) + F("</b><br>"); 
   mesg += F("<p>");
   mesg += F("<p>");
   mesg += F("<p>");

@@ -28,7 +28,8 @@
     0.4.6 consolidate the mqttpub, more with callback, init ahour-10.0
     0.4.7 changed gain of current back to GAIN_ONE to see if fix the spurious reads
     0.4.8 changed circuit to add RC filter on current, changed current correction and multip
- 
+    0.4.9 removed RC filterset gain amd multiplier back
+    0.5.0 change asd to use median value, 2 second cycle, 10 second mqtt, lots debug
 */
 #define COPYRIGHT1 PSTR("\
      /* \
@@ -39,25 +40,26 @@
       * All rights reserved. \
       */ \
     ")
-const char *gRev = "bat-0.4.7";  // Software Revision Code
+const char *gRev = "bat-0.5.0";  // Software Revision Code
 
 #include <ESP8266WiFi.h>
 int mystate=3;
 char msg[50];
 char v_str[15], c_str[15], ah_str[15]; 
 char c3[15], c4[15];
-long curr_in[5]; byte cnt=0;
-float current, ahour=0.0;
+long curr_in[9]; byte cnt=0;
+float volt, current, ahour=0.0, last_cur=0.0;
 unsigned int op_hour=1;
 int16_t adc1, adc2;
 unsigned long ads_time = 1000;
+unsigned long ads_dur = 0;
 unsigned long last_ads = millis();
-unsigned long mqtt_time = 30000;
+unsigned long mqtt_time = 10000;
 unsigned long last_mqtt = millis();
 unsigned long last_ota = millis();
 unsigned long ota = 10000;
-unsigned long loop_count = 0; 
-unsigned long loop_count_avg =0;
+//unsigned long loop_count = 0; 
+//unsigned long loop_count_avg =0;
 
 
 #define DO_OTA
@@ -136,7 +138,7 @@ void setup() {
  
 // the loop function runs over and over again forever
 void loop() {
-  loop_count++;
+//  loop_count++;
   #ifdef DO_OTA
     if ( (ota + last_ota) < millis() ){
       last_ota = millis();
@@ -163,7 +165,7 @@ void loop() {
 
   // Blink the LED
   digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED on 
-  delay(500);                       // Wait for a  bit
+  delay(100);                       // Wait for a  bit
   digitalWrite(LED_BUILTIN, LOW);  // Turn the LED off by making the voltage HIGH
 
   Serial.print("mqtt.state=");
